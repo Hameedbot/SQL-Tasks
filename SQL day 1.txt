@@ -1,14 +1,14 @@
-# ======================================================================
+
 # CREATE DATABASE LibraryDB
-# ======================================================================
+
 
 create database LibraryDB;
 use LibraryDB;
 
 
-# ======================================================================
+
 # SCHEMA OF LibraryDB
-# ======================================================================
+
 
 create table Books(book_id int primary key,book_name varchar(50),author varchar(30),price int);
 
@@ -96,9 +96,9 @@ delete from Borrow where brw_id=7;
 delete from Books where stock_quantity=0;
 
 
-# ======================================================================
+
 # QUERIES OF LibraryDB
-# ======================================================================
+
 
 select*from Books;
 select*from Members;
@@ -156,9 +156,9 @@ select category,sum(stock_quantity) as category_tot_stock from Books group by ca
 select author,avg(price) as auth_avg_price from Books group by author having avg(price) > 350;
 
 
-# ======================================================================
+
 # PERMISSIONS OF LibraryDB
-# ======================================================================
+
 
 create user 'library_user'@'localhost' identified by 'library123';
 
