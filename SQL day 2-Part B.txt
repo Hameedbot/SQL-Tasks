@@ -1,0 +1,182 @@
+-- 1
+select books.book_name,members.mem_name
+from books
+join borrow on books.book_id=borrow.book_id
+join members on borrow.mem_id=members.mem_id;
+
+
+-- 2.
+select books.book_name,members.mem_name,borrow.brw_date
+from books
+join borrow on books.book_id=borrow.book_id
+join members on borrow.mem_id=members.mem_id;
+
+
+-- 3
+select books.book_name,books.author,members.mem_name,members.city
+from books
+join borrow on books.book_id=borrow.book_id
+join members on borrow.mem_id=members.mem_id;
+
+
+-- 4
+select books.book_name
+from books
+join borrow on books.book_id=borrow.book_id
+join members on borrow.mem_id=members.mem_id
+where members.city='Chennai';
+
+
+-- 5
+select books.book_name
+from books
+join borrow on books.book_id=borrow.book_id
+join members on borrow.mem_id=members.mem_id
+where members.mem_name='Arun Kumar';
+
+
+-- 6
+select distinct members.mem_name
+from members
+join borrow on members.mem_id=borrow.mem_id
+join books on borrow.book_id=books.book_id
+where books.category='romance';
+
+
+-- 7
+select books.book_name,members.mem_name
+from books
+join borrow on books.book_id=borrow.book_id
+join members on borrow.mem_id=members.mem_id;
+
+
+-- 8
+select books.book_name,members.mem_name,borrow.brw_date
+from books
+join borrow on books.book_id=borrow.book_id
+join members on borrow.mem_id=members.mem_id
+order by borrow.brw_date;
+
+
+-- 9
+select books.book_name,members.mem_name
+from books
+left join borrow on books.book_id=borrow.book_id
+left join members on borrow.mem_id=members.mem_id;
+
+
+-- 10
+select books.book_name,members.mem_name
+from books
+left join borrow on books.book_id=borrow.book_id
+left join members on borrow.mem_id=members.mem_id;
+
+
+-- 11
+select members.mem_name,books.book_name
+from members
+left join borrow on members.mem_id=borrow.mem_id
+left join books on borrow.book_id=books.book_id;
+
+
+-- 12
+select members.mem_name,books.book_name
+from members
+left join borrow on members.mem_id=borrow.mem_id
+left join books on borrow.book_id=books.book_id;
+
+
+-- 13
+select books.book_name
+from books
+left join borrow on books.book_id=borrow.book_id
+where borrow.book_id is null;
+
+
+-- 14
+select members.mem_name
+from members
+left join borrow on members.mem_id=borrow.mem_id
+where borrow.mem_id is null;
+
+
+-- 15
+select borrow.*,books.book_name
+from borrow
+right join books on borrow.book_id=books.book_id;
+
+
+-- 16
+select borrow.*,members.mem_name
+from borrow
+left join members on borrow.mem_id=members.mem_id;
+
+
+-- 17
+select members.mem_name,borrow.brw_id,borrow.brw_date
+from borrow
+right join members on borrow.mem_id=members.mem_id;
+
+
+-- 18
+select books.book_name,members.mem_name
+from books
+cross join members;
+
+
+-- 19
+select count(*)
+from books
+cross join members;
+
+
+-- 20
+select books.book_name,members.mem_name
+from books
+cross join members
+where books.category='romance';
+
+
+-- 21
+select members.mem_name,count(borrow.book_id) as borrow_count
+from members
+left join borrow on members.mem_id=borrow.mem_id
+group by members.mem_id,members.mem_name;
+
+
+-- 22
+select books.book_name,count(distinct borrow.mem_id) as member_count
+from books
+left join borrow on books.book_id=borrow.book_id
+group by books.book_id,books.book_name;
+
+
+-- 23
+select books.book_name,count(borrow.book_id) as borrow_count
+from books
+join borrow on books.book_id=borrow.book_id
+group by books.book_id,books.book_name
+order by borrow_count desc
+limit 1;
+
+
+-- 24
+select members.mem_name,count(borrow.book_id) as borrow_count
+from members
+join borrow on members.mem_id=borrow.mem_id
+group by members.mem_id,members.mem_name
+having count(borrow.book_id)>2;
+
+
+-- 25
+select books.category,count(borrow.book_id) as borrow_count
+from books
+left join borrow on books.book_id=borrow.book_id
+group by books.category;
+
+
+-- 26
+select books.category,count(borrow.book_id) as total_borrowed
+from books
+join borrow on books.book_id=borrow.book_id
+group by books.category;

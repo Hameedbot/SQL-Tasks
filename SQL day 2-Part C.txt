@@ -1,0 +1,120 @@
+-- 1
+select book_name,price
+from books
+where price>(select avg(price) from books);
+
+
+-- 2
+select book_name,price
+from books
+where price<(select avg(price) from books);
+
+
+-- 3
+select book_name,price
+from books
+where price=(select max(price) from books);
+
+
+-- 4
+select book_name,price
+from books
+where price=(select min(price) from books);
+
+
+-- 5
+select book_name,price
+from books
+where price=(select price from books where book_id=2);
+
+
+-- 6
+select book_name,stock_quantity
+from books
+where stock_quantity>(select avg(stock_quantity) from books);
+
+
+-- 7
+select distinct category
+from books
+where category in(
+    select category
+    from books
+    group by category
+    having count(*)>1);
+
+
+-- 8
+select distinct author
+from books
+where author in(
+    select author
+    from books
+    group by author
+    having count(*)>1);
+
+
+-- 9
+select category
+from books
+group by category
+having avg(price)>500;
+
+
+-- 10
+select mem_name
+from members
+where mem_id in(
+    select borrow.mem_id
+    from borrow
+    join books on borrow.book_id=books.book_id
+    where books.category='romance');
+
+
+-- 11
+select book_name
+from books
+where book_id not in(
+    select book_id
+    from borrow);
+
+
+-- 12
+select mem_name
+from members where mem_id not in(
+    select mem_id
+    from borrow);
+
+
+-- 13
+select distinct author
+from books
+where author not in(
+    select books.author
+    from books
+    join borrow on books.book_id=borrow.book_id);
+
+
+-- 14
+select book_name
+from books
+where exists(
+    select *
+    from borrow
+    where borrow.book_id=books.book_id);
+
+
+-- 15
+select mem_name
+from members where exists(
+    select *
+    from borrow
+    where borrow.mem_id=members.mem_id);
+
+
+-- 16
+select book_name
+from books where 2<=(
+    select count(*)
+    from borrow
+    where borrow.book_id=books.book_id);
