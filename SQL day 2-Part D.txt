@@ -1,0 +1,321 @@
+-- 1
+with average_price as (
+    select avg(price) as avg_price from books
+)
+select * from books
+where price > (select avg_price from average_price);
+
+-- 2
+with category_average as (
+    select category, avg(price) as avg_price
+    from books group by category
+)
+select * from category_average;
+
+-- 3
+with category_average as (
+    select category, avg(price) as avg_price
+    from books group by category
+)
+select * from books
+where price > (
+    select avg_price from category_average
+    where category_average.category = books.category
+);
+
+-- 4
+with category_stock as (
+    select category, sum(stock_quantity) as total_stock
+    from books group by category
+)
+select * from category_stock;
+
+-- 5
+with category_stock as (
+    select category, sum(stock_quantity) as total_stock
+    from books group by category
+)
+select * from category_stock where total_stock > 20;
+
+-- 6
+with category_max as (
+    select category, max(price) as max_price
+    from books group by category
+)
+select * from books
+where price = (
+    select max_price from category_max
+    where category_max.category = books.category
+);
+
+-- 7
+with author_count as (
+    select author, count(*) as total_books
+    from books group by author
+)
+select * from author_count;
+
+-- 8
+with author_count as (
+    select author, count(*) as total_books
+    from books group by author
+)
+select * from author_count where total_books > 1;
+
+-- 9
+select book_name, price,
+rank() over (order by price desc)
+from books;
+
+-- 10
+select book_name, price,
+rank() over (order by price asc)
+from books;
+
+-- 11
+select book_name, price,
+row_number() over (order by price)
+from books;
+
+-- 12
+select book_name, category, price,
+rank() over (partition by category order by price desc)
+from books;
+
+-- 13
+select book_name, category, price,
+dense_rank() over (partition by category order by price desc)
+from books;
+
+-- 14
+select book_name, category, price,
+avg(price) over (partition by category)
+from books;
+
+-- 15
+select book_name, category, price,
+max(price) over (partition by category)
+from books;
+
+-- 16
+select book_name, category, price,
+min(price) over (partition by category)
+from books;
+
+-- 17
+select book_name, category, price,
+price - avg(price) over (partition by category)
+from books;
+
+-- 18
+select book_name, stock_quantity,
+sum(stock_quantity) over (
+    order by book_id rows unbounded preceding
+)
+from books;
+
+-- 19
+select book_name, category, stock_quantity,
+sum(stock_quantity) over (
+    partition by category order by book_id
+    rows unbounded preceding
+)
+from books;
+
+-- 20
+select book_name, price,
+lag(price) over (order by book_id)
+from books;
+
+-- 21
+select book_name, price,
+lead(price) over (order by book_id)
+from books;
+
+-- 22
+select book_name, price,
+price - lag(price) over (order by book_id)
+from books;
+
+-- 23
+select book_name, price,
+case when price > 600 then 'expensive'
+else 'affordable' end
+from books;
+
+-- 24
+select book_name, price,
+case
+    when price < 400 then 'low'
+    when price <= 700 then 'medium'
+    else 'high'
+end
+from books;
+
+-- 25
+select book_name, stock_quantity,
+case
+    when stock_quantity = 0 then 'out of stock'
+    when stock_quantity between 1 and 5 then 'low stock'
+    else 'available'
+end
+from books;
+
+-- 26
+select book_name, price,
+case when price > 600 then 'expensive'
+else 'affordable' end
+from books;
+
+-- 27
+select book_name, stock_quantity,
+case
+    when stock_quantity = 0 then 'out of stock'
+    when stock_quantity between 1 and 5 then 'low stock'
+    else 'available'
+end
+from books;
+
+-- 28
+select
+case
+    when price < 400 then 'low'
+    when price <= 700 then 'medium'
+    else 'high'
+end,
+count(*)
+from books
+group by
+case
+    when price < 400 then 'low'
+    when price <= 700 then 'medium'
+    else 'high'
+end;
+
+-- 29
+select book_name, price,
+case when price > 700 then price - 100
+else price end
+from books;
+
+-- 30
+create view technology_books as
+select * from books where category = 'Technology';
+
+-- 31
+select * from technology_books;
+
+-- 32
+create view expensive_books as
+select * from books where price > 600;
+
+-- 33
+create view available_books as
+select * from books where stock_quantity > 0;
+
+-- 34
+create view library_borrow_details as
+select books.book_name, books.author, members.mem_name,
+members.city, borrow.brw_date
+from books
+inner join borrow on books.book_id = borrow.book_id
+inner join members on members.mem_id = borrow.mem_id;
+
+-- 35
+select * from library_borrow_details;
+
+-- 36
+create view category_average_price as
+select category, avg(price)
+from books group by category;
+
+-- 37
+create view members_who_borrowed as
+select distinct members.*
+from members
+inner join borrow on members.mem_id = borrow.mem_id;
+
+-- 38
+describe technology_books;
+
+-- 39
+create or replace view technology_books as
+select book_id, book_name, author, category, price, stock_quantity
+from books where category = 'Technology';
+
+-- 40
+drop view available_books;
+
+-- 41
+delimiter //
+create procedure getallbooks()
+begin
+    select * from books;
+end //
+delimiter ;
+
+-- 42
+call getallbooks();
+
+-- 43
+delimiter //
+create procedure getallmembers()
+begin
+    select * from members;
+end //
+delimiter ;
+
+-- 44
+call getallmembers();
+
+-- 45
+delimiter //
+create procedure getbooksbycategory(in category_name varchar(30))
+begin
+    select * from books where category = category_name;
+end //
+delimiter ;
+
+-- 46
+call getbooksbycategory('Technology');
+
+-- 47
+delimiter //
+create procedure getbooksbyauthor(in author_name varchar(30))
+begin
+    select * from books where author = author_name;
+end //
+delimiter ;
+
+-- 48
+delimiter //
+create procedure getbooksaboveprice(in price_limit decimal(10,2))
+begin
+    select * from books where price > price_limit;
+end //
+delimiter ;
+
+-- 49
+delimiter //
+create procedure getmemberborrowdetails(in selected_mem_id int)
+begin
+    select members.mem_name, books.book_name, borrow.brw_date,
+           borrow.return_date
+    from members
+    inner join borrow on members.mem_id = borrow.mem_id
+    inner join books on books.book_id = borrow.book_id
+    where members.mem_id = selected_mem_id;
+end //
+delimiter ;
+
+-- 50
+delimiter //
+create procedure getcategorybooks(
+    in category_name varchar(30),
+    in price_limit decimal(10,2)
+)
+begin
+    select * from books
+    where category = category_name and price <= price_limit;
+end //
+delimiter ;

@@ -1,0 +1,174 @@
+-- 1
+select distinct members.mem_name
+from members
+inner join borrow on members.mem_id = borrow.mem_id
+inner join books on books.book_id = borrow.book_id
+where books.price > (select avg(price) from books);
+
+-- 2
+select book_name, author, category, price
+from books
+where price = (
+    select max(price) from books as category_books
+    where category_books.category = books.category
+);
+
+-- 3
+select category, avg(price)
+from books
+group by category
+having avg(price) > (select avg(price) from books);
+
+-- 4
+select members.mem_id, members.mem_name
+from members
+inner join borrow on members.mem_id = borrow.mem_id
+group by members.mem_id, members.mem_name
+having count(borrow.brw_id) > 1;
+
+-- 5
+select * from books
+where price > 500
+and book_id not in (select book_id from borrow);
+
+-- 6
+select *
+from (
+    select books.*,
+    dense_rank() over (order by price desc) as price_rank
+    from books
+) as ranked_books
+where price_rank <= 3;
+
+-- 7
+select category, count(*), avg(price), sum(stock_quantity)
+from books group by category;
+
+-- 8
+select book_name, category, price,
+avg(price) over (partition by category),
+price - avg(price) over (partition by category)
+from books;
+
+-- 9
+select members.mem_id, members.mem_name, count(borrow.brw_id)
+from members
+left join borrow on members.mem_id = borrow.mem_id
+group by members.mem_id, members.mem_name;
+
+-- 10
+with member_count as (
+    select members.mem_id, members.mem_name,
+    count(borrow.brw_id) as total_borrowed
+    from members
+    left join borrow on members.mem_id = borrow.mem_id
+    group by members.mem_id, members.mem_name
+)
+select * from member_count
+where total_borrowed > (
+    select avg(total_borrowed) from member_count
+);
+
+-- 11
+select members.mem_name, books.book_name, books.price
+from members
+inner join borrow on members.mem_id = borrow.mem_id
+inner join books on books.book_id = borrow.book_id
+where books.price = (
+    select max(books.price)
+    from books
+    inner join borrow on books.book_id = borrow.book_id
+    where borrow.mem_id = members.mem_id
+);
+
+-- 12
+select category, count(*), avg(price)
+from books group by category
+having count(*) >= 2 and avg(price) > 500;
+
+-- 13
+select *
+from (
+    select books.*,
+    dense_rank() over (
+        partition by category order by price desc
+    ) as price_rank
+    from books
+) as ranked_books
+where price_rank <= 2;
+
+-- 14
+select * from books
+where stock_quantity > 5
+and price > (
+    select avg(price) from books as category_books
+    where category_books.category = books.category
+);
+
+-- 15
+create view book_borrow_count as
+select books.book_name, books.category, books.price,
+books.stock_quantity, count(borrow.brw_id) as borrow_count
+from books
+left join borrow on books.book_id = borrow.book_id
+group by books.book_id, books.book_name, books.category,
+books.price, books.stock_quantity;
+
+-- 16
+delimiter //
+create procedure category_books_by_price(in category_name varchar(30))
+begin
+    select * from books
+    where category = category_name
+    order by price desc;
+end //
+delimiter ;
+
+-- 17
+delimiter //
+create procedure books_in_price_range(
+    in minimum_price decimal(10,2),
+    in maximum_price decimal(10,2)
+)
+begin
+    select * from books
+    where price between minimum_price and maximum_price;
+end //
+delimiter ;
+
+-- 18
+with category_borrow_count as (
+    select books.category, count(borrow.brw_id) as total_borrowed
+    from books
+    inner join borrow on books.book_id = borrow.book_id
+    group by books.category
+)
+select * from category_borrow_count
+where total_borrowed > 2;
+
+-- 19
+select
+case
+    when price < 400 then 'low'
+    when price <= 700 then 'medium'
+    else 'high'
+end,
+count(*)
+from books
+group by
+case
+    when price < 400 then 'low'
+    when price <= 700 then 'medium'
+    else 'high'
+end;
+
+-- 20
+select *
+from (
+    select books.*,
+    rank() over (
+        partition by category order by price desc
+    ) as price_rank
+    from books
+) as ranked_books
+where price_rank = 1;

@@ -1,0 +1,158 @@
+-- 1
+select * from books
+where price = (
+    select max(price) from books
+    where price < (select max(price) from books)
+);
+
+-- 2
+select * from books
+where price = (
+    select max(price) from books
+    where price < (select max(price) from books)
+);
+
+-- 3
+with ranked_books as (
+    select books.*,
+    dense_rank() over (order by price desc) as price_rank
+    from books
+)
+select * from ranked_books where price_rank = 3;
+
+-- 4
+select distinct category from books
+where price = (select max(price) from books);
+
+-- 5
+with author_count as (
+    select author, count(*) as total_books
+    from books group by author
+)
+select * from author_count
+where total_books = (
+    select max(total_books) from author_count
+);
+
+-- 6
+with member_count as (
+    select members.mem_id, members.mem_name,
+    count(borrow.brw_id) as total_borrowed
+    from members
+    left join borrow on members.mem_id = borrow.mem_id
+    group by members.mem_id, members.mem_name
+)
+select * from member_count
+where total_borrowed = (
+    select max(total_borrowed) from member_count
+);
+
+-- 7
+with book_count as (
+    select books.book_id, books.book_name,
+    count(borrow.brw_id) as total_borrowed
+    from books
+    left join borrow on books.book_id = borrow.book_id
+    group by books.book_id, books.book_name
+)
+select * from book_count
+where total_borrowed = (
+    select max(total_borrowed) from book_count
+);
+
+-- 8
+select * from books
+where book_id not in (select book_id from borrow);
+
+-- 9
+select category from books
+group by category
+having min(price) > 300;
+
+-- 10
+select distinct category from books where price > 800;
+
+-- 11
+select * from books
+where price > (select avg(price) from books)
+and price < (select max(price) from books);
+
+-- 12
+with ranked_books as (
+    select books.*,
+    dense_rank() over (
+        partition by category order by price desc
+    ) as price_rank
+    from books
+)
+select * from ranked_books where price_rank <= 2;
+
+-- 13
+select members.mem_id, members.mem_name
+from members
+inner join borrow on members.mem_id = borrow.mem_id
+inner join books on books.book_id = borrow.book_id
+group by members.mem_id, members.mem_name
+having count(distinct books.category) > 1;
+
+-- 14
+with category_value as (
+    select category, sum(price * stock_quantity) as total_value
+    from books group by category
+)
+select * from category_value
+where total_value = (
+    select max(total_value) from category_value
+);
+
+-- 15
+select sum(price * stock_quantity) from books;
+
+-- 16
+select category, sum(price * stock_quantity)
+from books group by category;
+
+-- 17
+with category_value as (
+    select category, sum(price * stock_quantity) as total_value
+    from books group by category
+)
+select category, total_value,
+rank() over (order by total_value desc)
+from category_value;
+
+-- 18
+select distinct members.mem_name, books.book_name, books.price
+from members
+inner join borrow on members.mem_id = borrow.mem_id
+inner join books on books.book_id = borrow.book_id
+where books.price = (
+    select max(books.price)
+    from books
+    inner join borrow on books.book_id = borrow.book_id
+);
+
+-- 19
+with member_count as (
+    select members.mem_id, members.mem_name,
+    count(borrow.brw_id) as total_borrowed
+    from members
+    left join borrow on members.mem_id = borrow.mem_id
+    group by members.mem_id, members.mem_name
+)
+select mem_id, mem_name, total_borrowed,
+rank() over (order by total_borrowed desc)
+from member_count;
+
+-- 20
+select books.book_name, books.author, books.category,
+books.price, books.stock_quantity, members.mem_name,
+borrow.brw_date, borrow.return_date,
+case
+    when books.price < 400 then 'low'
+    when books.price <= 700 then 'medium'
+    else 'high'
+end
+from books
+left join borrow on books.book_id = borrow.book_id
+left join members on members.mem_id = borrow.mem_id;
